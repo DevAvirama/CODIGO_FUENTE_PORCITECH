@@ -1,0 +1,10 @@
+# Subrepositorios independientes
+porcitech-backend/
+porcitech-nextjs/
+porcitech_mobile/
+vision-artificial/
+
+# Entornos y temporales
+.env
+*.dump
+.DS_Store
