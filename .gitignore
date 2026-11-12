@@ -3,8 +3,14 @@ porcitech-backend/
 porcitech-nextjs/
 porcitech_mobile/
 vision-artificial/
+ScriptsSQL/
+Documents/
 
 # Entornos y temporales
 .env
 *.dump
 .DS_Store
+*.sh
+*.yml
+*.json
+.gitattributes
