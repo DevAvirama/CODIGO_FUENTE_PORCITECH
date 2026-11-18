@@ -22,6 +22,7 @@
 | **v2.0.0** | v2.0.0 | 20/07/2025 | Incorporación de la App Móvil: Teclado para guantes y cola Offline-First. | Mariana Guapacha | Pablo A. Ortiz (PO) |
 | **v3.0.0** | v3.0.0 | 15/09/2025 | Guía de pesaje cenital por Visión Artificial y Monitor CCTV Dahua. | Juan David Ocampo| Pablo A. Ortiz (PO) |
 | **v4.0.0** | v4.0.0 | 09/11/2026 | Consolidación PorciTech 4.0: Pasaporte QR ICA, Kardex y analítica GMD. | Santiago Avirama | Pablo A. Ortiz (PO) |
+| **v4.1.0** | v4.1.0 | 18/11/2026 | Actualización integral: Cámara móvil embebida multivista, módulo móvil de alimentación, calibración ArUco web, planes/FCR, auditoría de vacíos sanitarios, alertas de caducidad FEFO, recuperación SMTP y exportación Excel/PDF. | Santiago Avirama | Pablo A. Ortiz (PO) |
 
 ---
 
@@ -38,7 +39,7 @@
 # 1. Introducción y Requisitos del Sistema
 
 ### 1.1 ¿Qué es PorciTech 4.0?
-**PorciTech 4.0** es un ecosistema tecnológico diseñado para tecnificar la producción porcícola en Colombia. Elimina el estrés del pesaje mecánico mediante **Visión Artificial con Inteligencia Artificial (YOLOv8)**, asegura la inocuidad alimentaria controlando los **tiempos de retiro de medicamentos exigidos por el ICA**, optimiza el 75% del costo de producción (el alimento concentrado) a través de un **Kardex automatizado** y permite a los operarios trabajar en los galpones **sin conexión a internet** gracias a su arquitectura **Offline-First**.
+**PorciTech 4.0** es un ecosistema tecnológico diseñado para tecnificar la producción porcícola en Colombia. Elimina el estrés del pesaje mecánico mediante **Visión Artificial híbrida (YOLOv8 + XGBoost + calibración ArUco)** capaz de estimar peso desde cámara fija o desde el celular en **cualquier ángulo**, asegura la inocuidad alimentaria controlando los **tiempos de retiro de medicamentos y vencimientos de lotes exigidos por el ICA**, optimiza el 75% del costo de producción mediante **planes nutricionales, cálculo de Conversión Alimenticia (FCR) y Kardex FEFO**, audita **vacíos sanitarios (Todo Adentro / Todo Afuera)** y permite trabajar en galpones **sin conexión a internet** gracias a su arquitectura **Offline-First**.
 
 ---
 
@@ -46,463 +47,334 @@
 
 | Entorno de Uso | Dispositivo Recomendado | Conectividad | Requisitos de Software |
 | :--- | :--- | :--- | :--- |
-| **App Móvil de Campo** | Teléfono o tablet Android (versión 8.0 o superior) o iPhone (iOS 13+). | **Funciona 100% Desconectado** en los corrales. Requiere Wi-Fi solo para sincronizar. | Cámara trasera de al menos 12 MP para escaneo de QR y fotos cenitales. |
-| **Portal Web Administrativo** | Computador de escritorio o portátil. | Red local de la granja (LAN) o internet. | Navegador moderno (Google Chrome, Microsoft Edge, Mozilla Firefox o Brave). |
+| **App Móvil de Campo (`PorciTech-Mobile.apk`)** | Teléfono o tablet Android (versión 8.0 o superior) o iPhone (iOS 13+). | **Funciona 100% Desconectado** en los corrales. Requiere Wi-Fi solo para sincronizar. | Cámara trasera con permisos habilitados para escaneo de QR y captura de peso en vivo. |
+| **Portal Web Administrativo** | Computador de escritorio, portátil o tablet. | Red local de la granja (LAN) o internet. | Navegador moderno (Google Chrome, Microsoft Edge, Mozilla Firefox o Safari). |
 | **Pasaporte Sanitario QR** | Cualquier smartphone con lector de QR o cámara nativa. | Conexión a red móvil (3G/4G) o Wi-Fi. | Cualquier navegador web (no requiere instalar ninguna app ni iniciar sesión). |
 
 ---
 
-### 1.3 Credenciales de Acceso Demostrativas (Roles del Sistema)
+### 1.3 Cuentas de Acceso por Rol (Entorno Demostrativo)
 
-Para iniciar sesión en las pruebas de campo o demostraciones oficiales, utilice una de las siguientes cuentas pre-configuradas según el perfil que desee evaluar:
+Utilice una de las siguientes cuentas según el perfil que desee evaluar:
 
-| Rol | Correo Electrónico | Contraseña | Permisos Principales |
+| Rol | Correo Electrónico | Contraseña | Módulos Habilitados en Web / Móvil |
 | :--- | :--- | :---: | :--- |
-| **Administrador** | `admin@sigep.com` | `admin123` | Control total, gestión de usuarios, auditoría, Kardex y configuración. |
-| **Médico Veterinario** | `vet@sigep.com` | `vet123` | Prescripción sanitaria, semáforo de carencia ICA y control reproductivo. |
-| **Operario de Galpón** | `operario@sigep.com` | `operario123` | Pesajes diarios, escaneo de aretes QR, raciones de comida y partos. |
+| **Administrador** | `admin@sigep.com` | `admin123` | Acceso total a los 9 módulos web, exportación oficial Excel/PDF, calibración ArUco y gestión de usuarios. |
+| **Médico Veterinario** | `vet@sigep.com` | `vet123` | Inicio, Animales (y Vacíos Sanitarios), Inventario, Reproducción, Vacunación, Alertas/Reportes y Perfil. |
+| **Operario de Galpón** | `operario@sigep.com` | `operario123` | Inicio, Animales, Inventario, Registro de Peso, Alimentación y App Móvil completa de campo. |
+
+> [!NOTE]
+> Si olvida su contraseña en la plataforma web, puede recuperarla autónomamente haciendo clic en **¿Olvidaste tu contraseña?** en la pantalla de inicio de sesión.
 
 ---
 
 <a name="2-módulo-i-operación-móvil-de-campo"></a>
 # 📱 2. Módulo I: Operación Móvil de Campo (App Flutter)
 
-Este módulo está especialmente adaptado a las condiciones de humedad, polvo y manipulación con **guantes de bioseguridad** en los galpones.
+Diseñada bajo identidad oficial **SENA PorciTech**, adaptada a humedad, polvo y uso con **guantes de bioseguridad** en los galpones.
 
 ---
 
-### 2.1 Inicio de Sesión y Reconocimiento de Conectividad
+### 2.1 Pantalla de Bienvenida, Selector de Servidor LAN e Inicio de Sesión
 
-#### Procedimiento para Iniciar Sesión:
-1. Abra la aplicación **PorciTech Móvil** en su dispositivo.
-2. Ingrese su **Correo Electrónico** y **Contraseña**.
-3. Presione el botón verde **Ingresar al Sistema**.
-4. La aplicación guardará su sesión de forma segura y cifrada en el dispositivo para que no tenga que volver a digitar sus datos cada vez que ingrese al galpón.
+Al abrir la aplicación, se muestra brevemente la pantalla de bienvenida animada con el logotipo oficial **SENA PorciTech** y luego el formulario de acceso.
+
+#### Procedimiento para Configurar la IP del Servidor e Iniciar Sesión:
+1. *(Opcional, si usa un computador portátil o servidor nuevo en la finca)* En la pantalla de ingreso, toque el enlace **Conexión con Servidor Local** (muestra la IP actual, ej. `192.168.1.7:8000`).
+2. Ingrese la dirección IP y puerto de su servidor en la red Wi-Fi y presione **Guardar IP**.
+3. Digite su **Correo Electrónico** y **Contraseña**.
+4. Presione el botón verde **Ingresar al Sistema**.
+5. La aplicación guardará su sesión de forma cifrada para trabajar en el corral sin pedir credenciales en cada operación.
 
 ![Pantalla de Inicio de Sesión Móvil](docs/assets/screenshots/movil_01_login.png)
 
 ```text
 +-------------------------------------------------------+
-|  🐷 PORCITECH 4.0 - GESTIÓN DE CAMPO                  |
+|  [LOGO SENA] PORCITECH 4.0 - GESTIÓN DE CAMPO         |
 +-------------------------------------------------------+
 |  [1] Correo:     [ operario@sigep.com               ] |
 |  [2] Contraseña: [ •••••••••••                      ] |
 |                                                       |
+|  [3] 🌐 Servidor: 192.168.1.7:8000  [ Cambiar IP ]    |
+|                                                       |
 |        +-------------------------------------+        |
-|        | [3] BOTÓN: INGRESAR AL SISTEMA      |        |
+|        | [4] BOTÓN: INGRESAR AL SISTEMA      |        |
 |        +-------------------------------------+        |
 +-------------------------------------------------------+
 ```
-* **[1] Campo Correo:** Digite su usuario asignado.
-* **[2] Campo Contraseña:** Digite su clave de acceso.
-* **[3] Botón 'Ingresar al Sistema':** Valida credenciales y almacena el token seguro.
+* **[1] Campo Correo / [2] Contraseña:** Credenciales del operario o veterinario.
+* **[3] Selector de Servidor LAN:** Permite cambiar la IP del servidor local sin reinstalar la aplicación.
+* **[4] Botón 'Ingresar al Sistema':** Inicia sesión y sincroniza el catálogo real de porcinos, corrales e insumos.
 
 ---
 
 ### 2.2 Dashboard de Campo y Estado de Conexión
 
-Al ingresar, visualizará la pantalla principal de mando:
-
 ![Dashboard Móvil de Campo](docs/assets/screenshots/movil_02_dashboard.png)
 
 ```text
 +-------------------------------------------------------+
-|  PORCITECH CAMPO               [1] CHIP: [ ONLINE 🟢 ]|
+|  [LOGO] PORCITECH              [1] CHIP: [ Online 🟢 ]|
 +-------------------------------------------------------+
+|  👤 Juan Perez (Operario de Campo)                    |
 |  [2] TARJETA: Corrales Activos: 6  | Total Cerdos: 48 |
 +-------------------------------------------------------+
 |  ACCIONES RÁPIDAS EN GALPÓN:                          |
 |  +------------------------+  +----------------------+ |
-|  | [3] 📷 ESCANEAR QR     |  | [4] ⚖️ PESAR CON IA  | |
+|  | [3] 📷 ESCANEAR QR     |  | [4] ⚖️ PESAR CERDO   | |
 |  +------------------------+  +----------------------+ |
-|  | [5] 💉 REGISTRAR VACUNA|  | [6] 🐷 NUEVO PARTO   | |
+|  | [5] 🌾 ALIMENTACIÓN    |  | [6] 💉 SANIDAD       | |
+|  +------------------------+  +----------------------+ |
+|  | [7] 🐷 PARTOS          |  | [8] 📋 LOTES/CORRALES| |
 |  +------------------------+  +----------------------+ |
 |                                                       |
-|  [7] BOTÓN INFERIOR: [ IR A COLA DE SINCRONIZACIÓN ]  |
+|  [9] BOTÓN INFERIOR: [ AJUSTES Y COLA OFFLINE ]       |
 +-------------------------------------------------------+
 ```
-* **[1] Chip de Conectividad:** 
-  * `ONLINE 🟢`: El dispositivo tiene enlace con el servidor de la granja.
-  * `OFFLINE 🔴`: Sin señal. Los datos que registre se guardarán automáticamente en la memoria del teléfono.
-* **[2] Resumen del Galpón:** Total de animales y lotes a su cargo.
-* **[3-6] Botones Táctiles Gigantes:** Accesos directos ergonómicos diseñados para pulsarse con guantes de caucho.
-* **[7] Barra de Sincronización:** Muestra cuántas tareas están pendientes de subida.
+* **[1] Chip de Conectividad:** `Online 🟢` indica enlace activo con el servidor; `Offline 🟠` indica operación desconectada guardando en cola local.
+* **[2] Resumen del Galpón:** Indicadores reales del inventario porcino sincronizado.
+* **[3-8] Botones Táctiles Gigantes:** Accesos directos para escanear QR, pesar (manual o cámara IA), registrar raciones de alimento, vacunación, partos y explorar corrales.
+* **[9] Ajustes y Cola Offline:** Permite alternar modo offline manual y sincronizar registros pendientes.
 
 ---
 
 ### 2.3 Escaneo de Arete QR y Consulta Rápida en Corral
 
 #### Procedimiento:
-1. En el Dashboard de Campo, presione **Escanear QR**.
-2. Se activará la cámara con una mira láser verde animada.
-3. Apunte el visor al código QR impreso en el arete plástico del porcino a una distancia de entre 20 cm y 40 cm.
-4. Al detectarlo, el teléfono vibrará y desplegará automáticamente la ficha rápida del cerdo desde la parte inferior:
+1. En el Dashboard de Campo, presione **Escanear QR** (acepte el permiso de cámara la primera vez).
+2. Apunte el visor láser verde hacia el código QR del arete plástico del porcino.
+3. El sistema reconoce tanto **códigos QR simples** (ej. `QR-4092`) como **etiquetas impresas con URL completa** (ej. `http://.../trace/QR-4092`).
+4. Al leerlo, el teléfono despliega la ficha inmediata del ejemplar desde la parte inferior:
 
 ![Ficha Rápida tras Escanear QR](docs/assets/screenshots/movil_03_escaneo_qr.png)
 
-```text
-+-------------------------------------------------------+
-|              VISOR LÁSER ACTIVO [|||||]               |
-+-------------------------------------------------------+
-|  ================= FICHA DEL PORCINO ================ |
-|  Arete: #4092-CEBA            Corral: LOTE-15 (Ceba)  |
-|  Raza:  Pietrain x Landrace   Peso Actual: 58.5 kg    |
-|                                                       |
-|  [!] ESTADO SANITARIO:                                |
-|  [ 🟢 APTO - SIN RESTRICCIÓN DE MEDICAMENTOS ]        |
-|                                                       |
-|  ACCIONES RÁPIDAS:                                    |
-|  [ PESAR ESTE CERDO ]   [ APLICAR TRATAMIENTO ]       |
-+-------------------------------------------------------+
-```
-
 > [!CAUTION]
 > **ALERTA DE RETIRO SANITARIO (Semáforo Rojo):**
-> Si el porcino escaneado tiene un tratamiento antibiótico activo, aparecerá una franja roja parpadeante:
-> `🔴 EN PERIODO DE CARENCIA: Faltan 14 días (Tilmicosina) - PROHIBIDO DESTINAR A SACRIFICIO`.
+> Si el porcino escaneado tiene un tratamiento con tiempo de retiro vigente, verá un banner rojo bloqueante indicando el fármaco y los días restantes antes de poder comercializarlo.
 
 ---
 
-### 2.4 Estimación de Peso por Visión Artificial (Cámara Cenital)
+### 2.4 Estimación de Peso con Cámara Integrada en Vivo (Cualquier Ángulo)
 
-Reemplaza la báscula mecánica tradicional. Permite estimar el peso en milisegundos mediante una fotografía cenital (tomada desde arriba del corral).
+La aplicación integra la cámara directamente en pantalla para pesar porcinos en el corral **sin necesidad de obligar al animal a pararse en una báscula**, soportando fotografías desde **cualquier ángulo**.
 
-#### Reglas para una Captura Exitosa:
-1. Ubíquese por encima del cerdo (a una altura aproximada de 2.0 a 2.4 metros del suelo).
-2. Asegúrese de que el lomo del animal esté visible y que no quede cortado por los barrotes del corral.
-3. Presione el botón **Capturar Foto Cenital**.
+#### Procedimiento para Estimar Peso con Cámara IA:
+1. Seleccione un porcino desde el escáner QR o desde el selector de animales y toque **Estimar Peso con Cámara IA**.
+2. Se abrirá el visor en vivo integrado dentro de la aplicación.
+3. Seleccione en la barra superior el ángulo de su toma (por defecto **Libre (Auto)**):
+   * **Libre (Auto):** El sistema detecta automáticamente la perspectiva de la foto.
+   * **Lateral:** Toma de perfil junto al corral.
+   * **3/4 Oblicuo:** Toma en diagonal.
+   * **Superior:** Toma cenital desde arriba.
+4. *(Opcional)* Use los botones superiores de **Flash**, **Cambiar Cámara** o **Galería** si ya tiene una foto guardada.
+5. Encuadre al cerdo completo dentro del visor y presione el botón circular **Capturar**.
+6. La imagen se procesa y muestra la silueta segmentada, el peso estimado (kg), el área dorsal ($\text{cm}^2$) y la confianza. Presione **Confirmar y Aplicar Peso** para guardarlo.
 
-![Captura Cenital de Visión Artificial](docs/assets/screenshots/movil_04_captura_ia.png)
-
-```text
-+-------------------------------------------------------+
-|  GUÍA DE ENCUADRE CENITAL (LOMO COMPLETO)             |
-|                                                       |
-|          +-------------------------------+            |
-|          |     [ SILUETA DORSAL DEL      |            |
-|          |         PORCINO AQUÍ ]        |            |
-|          +-------------------------------+            |
-|                                                       |
-|  [1] Lente: Gran Angular 1x      [2] Calidad: 1280px  |
-|                                                       |
-|       +-------------------------------------+         |
-|       | [3] BOTÓN: ESTIMAR PESO CON IA      |         |
-|       +-------------------------------------+         |
-+-------------------------------------------------------+
-```
-* **[1] Encuadre Cenital:** La app ajusta automáticamente la perspectiva.
-* **[2] Preprocesamiento en el Celular:** La foto se redimensiona automáticamente a 1280px para que suba en milisegundos sin consumir memoria ni saturar la red.
-* **[3] Botón de Inferencia:** Envía la foto al modelo YOLOv8n-seg y muestra el resultado en pantalla:
+![Cámara Integrada de Peso con IA](docs/assets/screenshots/movil_04_captura_ia.png)
 
 ```text
 +-------------------------------------------------------+
-|  RESULTADO DE ESTIMACIÓN MORFOMÉTRICA                 |
-|  Peso Calculado: 62.4 kg                              |
-|  Área Dorsal:    1,905.0 cm²                          |
-|  Confianza IA:   98.0%                                |
+|  CÁMARA DE PESAJE IA          [⚡ Flash] [🖼️ Galería] |
+|  Ángulo: [● Libre (Auto)] [ Lateral ] [ 3/4 ] [ Sup.] |
++-------------------------------------------------------+
 |                                                       |
-|  [ CONFIRMAR Y GUARDAR EN FICHA ]   [ REPETIR FOTO ]  |
+|          +-------------------------------+            |
+|          |   VISTA EN VIVO DE LA CÁMARA  |            |
+|          |    Enfoque el cuerpo completo |            |
+|          |         del ejemplar          |            |
+|          +-------------------------------+            |
+|                                                       |
+|                   ( 📷 CAPTURAR )                     |
 +-------------------------------------------------------+
 ```
+
+> [!TIP]
+> Aunque la toma desde **cualquier ángulo** aplica corrección geométrica y escala adaptativa automáticamente, procure que el cerdo aparezca completo de cabeza a cola y con buena iluminación para obtener máxima precisión.
 
 ---
 
 ### 2.5 Registro de Pesaje Manual (Teclado Gigante para Guantes)
 
-Si se utiliza una báscula mecánica o báscula digital de plataforma de respaldo, el operario cuenta con un teclado numérico táctil de **64 píxeles de altura**:
+Si usa una báscula física de respaldo, ingrese a **Pesar Cerdo > Ingreso Manual** y digite el peso en el teclado numérico táctil de **64 píxeles de altura** con respuesta de vibración háptica (`HapticFeedback`), diseñado para operarse sin quitarse los guantes de bioseguridad.
 
 ![Teclado Gigante para Guantes](docs/assets/screenshots/movil_05_teclado_guantes.png)
 
-```text
-+-------------------------------------------------------+
-|  REGISTRO DE PESAJE MANUAL - ARETE #4092              |
-|                                                       |
-|  PESO EN BÁSCULA: [   58.50  ] KG                     |
-|                                                       |
-|  +-------+-------+-------+                            |
-|  |   1   |   2   |   3   |  <- Teclas de 64px de alto |
-|  +-------+-------+-------+     con vibración háptica  |
-|  |   4   |   5   |   6   |                            |
-|  +-------+-------+-------+                            |
-|  |   7   |   8   |   9   |                            |
-|  +-------+-------+-------+                            |
-|  |   .   |   0   |  BORR |                            |
-|  +-------+-------+-------+                            |
-|                                                       |
-|        +-------------------------------------+        |
-|        | BOTÓN: GUARDAR PESAJE               |        |
-|        +-------------------------------------+        |
-+-------------------------------------------------------+
-```
-* Cada toque emite una vibración ligera (`HapticFeedback`) para que el operario sepa que la tecla fue presionada sin necesidad de quitarse los guantes.
+---
+
+### 2.6 Alimentación y Bodega de Insumos en Campo
+
+Desde el acceso directo **Alimentación** en el Dashboard móvil, el operario cuenta con dos pestañas:
+
+1. **Pestaña `Registrar Ración`:**
+   * Seleccione el **Corral** (lote) y el **Alimento** disponible en bodega.
+   * Elija la **Fase Nutricional** (`Pre-iniciador`, `Iniciador`, `Levante`, `Ceba`).
+   * Digite la **Cantidad (kg)** servida y presione **Registrar Ración**.
+   * El sistema descuenta automáticamente los bultos/kg del stock siguiendo el orden de vencimiento **FEFO**.
+2. **Pestaña `Stock en Bodega`:**
+   * Muestra en tiempo real las existencias de alimentos disponibles en el almacén con indicador de stock mínimo.
 
 ---
 
-### 2.6 Registro de Parto y Conteo de Camadas (Cerdas Reproductoras)
+### 2.7 Registro de Tratamientos Sanitarios y Partos
 
-Exclusivo para la sala de maternidad cuando una hembra da a luz:
-
-#### Procedimiento:
-1. Escanee el arete de la madre o búsquela en el módulo de maternidad.
-2. Utilice los botones incrementales `+` y `-` para totalizar la camada:
-
-![Registro de Parto Móvil](docs/assets/screenshots/movil_06_parto.png)
-
-```text
-+-------------------------------------------------------+
-|  REGISTRO DE PARTO - CERDA #H-104 (SALA MATERNIDAD)   |
-+-------------------------------------------------------+
-|  Nacidos Vivos:   [ - ]  [ 13 ]  [ + ]  (Meta: >= 12) |
-|  Nacidos Muertos: [ - ]  [  1 ]  [ + ]                |
-|  Momias:          [ - ]  [  0 ]  [ + ]                |
-+-------------------------------------------------------+
-|  Peso Total Camada (kg): [  19.50 ]                   |
-|  Promedio por Lechón:     1.50 kg  (Desarrollo Óptimo)|
-+-------------------------------------------------------+
-|           +-------------------------------+           |
-|           | BOTÓN: FINALIZAR Y GUARDAR    |           |
-|           +-------------------------------+           |
-+-------------------------------------------------------+
-```
-
-> [!NOTE]
-> Al confirmar el parto, el sistema **cambia automáticamente el estado de la cerda a 'Lactante'** y actualiza el corral al pabellón de maternidad.
+* **Sanidad / Vacunación:** Seleccione el animal o corral, escoja el medicamento o biológico real del inventario de bodega, ingrese la dosis (botones rápidos `1 ml`, `2 ml`, `3 ml` o manual) y verifique el **lote biológico ICA**. Si algún lote en bodega está vencido, el sistema lo bloqueará automáticamente.
+* **Partos en Maternidad:** Seleccione una cerda del hato real (el sistema filtra automáticamente hembras) y use los contadores táctiles `+ / -` para registrar **Nacidos Vivos**, **Nacidos Muertos**, **Momias** y el **Peso Total de la Camada (kg)**.
 
 ---
 
-### 2.7 Modo Desconectado y Cola de Sincronización (Offline-First)
+### 2.8 Modo Desconectado y Cola de Sincronización (Offline-First)
 
-Cuando trabaje en galpones rurales profundos donde se pierde la señal Wi-Fi:
-
-1. La app seguirá funcionando con total normalidad.
-2. Al guardar un pesaje, parto o tratamiento sin señal, verá el mensaje:  
-   `📦 Guardado localmente en Cola Offline`.
-3. Al finalizar la jornada y volver al área administrativa con Wi-Fi, abra **Ajustes > Cola de Sincronización**:
-
-![Gestor de Sincronización Offline](docs/assets/screenshots/movil_07_sync.png)
-
-```text
-+-------------------------------------------------------+
-|  COLA DE SINCRONIZACIÓN LOCAL      [ ENLACE ACTIVO 🟢]|
-+-------------------------------------------------------+
-|  Registros pendientes por subir al servidor:          |
-|                                                       |
-|  [x] Pesaje Manual Cerdo #4092 (58.5 kg) - 10:14 AM   |
-|  [x] Tratamiento Oxitetraciclina L.A.    - 10:28 AM   |
-|  [x] Parto Cerda #H-104 (13 Vivos)       - 11:05 AM   |
-|                                                       |
-|        +-------------------------------------+        |
-|        | BOTÓN: SINCRONIZAR TODO AHORA       |        |
-|        +-------------------------------------+        |
-+-------------------------------------------------------+
-```
-4. Presione **Sincronizar Todo Ahora**. La app enviará cada registro de forma segura sin duplicar identificadores gracias a sus claves universales UUID v4.
+1. Cuando pierda conexión Wi-Fi dentro del galpón, el chip superior cambiará a `Offline 🟠`.
+2. Sus pesajes manuales, raciones, partos y tratamientos se guardarán en la memoria local con un identificador único (`id_local`).
+3. Al volver a la zona con cobertura Wi-Fi, abra el icono de **Ajustes (`⚙️`)** en la esquina superior derecha y presione **Sincronizar Todo Ahora**.
+4. Cada registro se envía de forma segura y atómica al servidor; si ocurre un micro-corte durante el envío, el sistema evita duplicados automáticamente.
 
 ---
 
 <a name="3-módulo-ii-portal-web-administrativo"></a>
 # 💻 3. Módulo II: Portal Web Administrativo (Next.js 16)
 
-Acceso desde cualquier navegador web en su computador apuntando a:  
-👉 `http://localhost:3000` (o la IP local del servidor: `http://192.168.x.x:3000`).
+Acceso desde cualquier navegador web en:  
+👉 `http://localhost:3000` (o la IP LAN del servidor: `http://<IP_SERVIDOR>:3000`).
+
+Al ingresar, la **Landing Page** presenta el resumen del ecosistema y los botones de acceso directo a **Iniciar Sesión** o consultar el portal.
 
 ---
 
-### 3.1 Resumen Ejecutivo (Dashboard Central)
+### 3.1 Inicio de Sesión, Recuperación SMTP y Navegación Responsiva
 
-El panel gerencial ofrece una vista panorámica de la granja en tiempo real:
+#### Cómo Recuperar su Contraseña por Correo:
+1. En la pantalla `/login`, haga clic en **¿Olvidaste tu contraseña?**.
+2. Ingrese su correo electrónico registrado y presione **Enviar Instrucciones**.
+3. Abra su correo y haga clic en el botón **Restablecer mi contraseña** (el enlace caduca automáticamente y es de un solo uso).
+4. Ingrese y confirme su nueva contraseña en `/reset-password`.
+
+#### Barra Lateral Adaptable (Escritorio y Móvil):
+* En computadores, el menú lateral izquierdo mantiene un tamaño fijo y muestra únicamente los módulos autorizados para su rol.
+* En celulares o tablets, presione el **botón de menú (`☰`)** en la barra superior para abrir el cajón de navegación, y use **Búsqueda Rápida QR** para consultar cualquier cerdo por su arete o código QR al instante.
+
+---
+
+### 3.2 Resumen Ejecutivo (Dashboard Central)
 
 ![Dashboard Web Administrativo](docs/assets/screenshots/web_01_dashboard.png)
 
-```text
-+-----------------------------------------------------------------------------------+
-| PORCITECH 4.0 | [🔍 Búsqueda Rápida Arete/QR]                [ Admin: Julian B. ] |
-+-----------------------------------------------------------------------------------+
-|  [1] TARJETAS KPI:                                                                |
-|  +----------------+  +----------------+  +----------------+  +-----------------+  |
-|  | TOTAL CABEZAS  |  | CORRALES OCUP. |  | PARTOS PRÓXIMOS|  | RETIROS ACTIVOS |  |
-|  |     48         |  |   6 / 10       |  |  2 (<= 7 días) |  |   2 Animales    |  |
-|  +----------------+  +----------------+  +----------------+  +-----------------+  |
-+-----------------------------------------------------------------------------------+
-|  [2] GRÁFICA ANALÍTICA GMD (TIMESCALEDB):           | [3] ALERTAS CRÍTICAS:       |
-|  Ganancia Media Diaria vs Meta Porkcolombia         | 🔴 Cerda #18: Retiro activo |
-|  850 g/día [========================]               | 🟡 Cerda #04: Parto en 4 d  |
-|  (Calculado automáticamente con función SQL LAG)    | 🟡 Alimento Ceba: Stock < 5 |
-+-----------------------------------------------------------------------------------+
-```
-* **[1] KPIs en Tiempo Real:** Población total, porcentaje de ocupación de galpones y alertas sanitarias.
-* **[2] Curvas de Crecimiento GMD:** Calculadas directamente desde TimescaleDB comparando el peso actual de cada corral contra su pesaje anterior.
-* **[3] Panel de Alertas:** Notificaciones urgentes de partos próximos y tiempos de retiro.
+Presenta en tiempo real:
+* **Tarjetas KPI:** Inventario animal activo, ocupación de corrales, alertas de partos próximos ($\le 7$ días) y retiros farmacológicos activos.
+* **Actividad Reciente y Sugerencias:** Últimos movimientos de peso, raciones, sanidad y recomendaciones operativas.
 
 ---
 
-### 3.2 Hoja de Vida Porcina e Impresión de Etiquetas QR
+### 3.3 Animales, Etiquetas QR y Auditoría de Vacíos Sanitarios
 
-En el menú lateral **Población > Listado de Animales**:
-
-1. Seleccione cualquier porcino para ver su expediente completo:
-   * Filiación genética (Padre y Madre).
-   * Historial de pesajes con gráfica de crecimiento.
-   * Tratamientos médicos recibidos.
-2. Presione el botón **Generar Etiqueta QR Imprimible**:
-   * Descargará una plantilla en PDF lista para imprimir en hojas adhesivas resistentes al agua para pegar en el arete visual del animal.
+En el menú **Animales** encontrará:
+1. **Catálogo de Porcinos y Corrales:** Busque por arete/QR, filtre por corral o estado (`activo`, `lactante`, `gestacion`, `precebo`, `levante`, `engorde`, `cuarentena`, `enfermo`, `reemplazo`, `vendido`, `muerto`, `descarte`).
+2. **Hoja de Vida y Etiqueta QR:** Haga clic sobre un animal para ver su genealogía (Padre/Madre), historial de pesajes y generar su etiqueta QR imprimible.
+3. **Pestaña Auditoría de Vacíos Sanitarios (Todo Adentro / Todo Afuera):**
+   * Permite registrar ciclos sanitarios de lotes por corral (`fecha_entrada`, `fecha_salida`, `dias_vacio_requerido` y confirmación de `desinfección`).
+   * El sistema audita automáticamente si entre el lote saliente y el entrante transcurrieron los días mínimos de descanso y marca el estado:
+     * 🟢 **Cumple Protocolo**
+     * 🔴 **Vacío Insuficiente**
+     * 🟡 **Pendiente Desinfección**
 
 ---
 
-### 3.3 Pesaje en Vivo con Cámara Industrial Dahua (Monitor CCTV)
+### 3.4 Pesaje Inteligente: Cámara Dahua en Vivo, Calibración ArUco y Curvas GMD
 
-En el menú lateral **Pesaje e IA > Monitor en Vivo**:
+En el menú **Registro de Peso** dispone de cuatro vistas principales:
 
 ![Monitor CCTV en Vivo](docs/assets/screenshots/web_02_cctv.png)
 
-```text
-+-----------------------------------------------------------------------------------+
-|  MONITOR CENITAL EN VIVO - CÁMARA INDUSTRIAL DAHUA TPC-BF                         |
-+----------------------------------------------------+------------------------------+
-|  [1] TRANSMISIÓN MJPEG (0-LAG / 20 FPS):           | [2] MÉTRICAS EN VIVO:        |
-|                                                    | Confianza YOLO:  97.4%       |
-|          +-------------------------------+         | Área Estimada:   1,777 cm²   |
-|          |    [ VIDEO DEL CORRAL EN VIVO |         | Peso Proyectado: 58.0 kg     |
-|          |    CON CAJA Y MÁSCARA VERDE]  |         +------------------------------+
-|          +-------------------------------+         | [3] SELECCIONAR CERDO:       |
-|                                                    | Arete: [ #4092-CEBA        ] |
-|  CANAL: [ Canal 1: Óptico ] [ Canal 2: Térmico ]   |                              |
-|                                                    | +--------------------------+ |
-|                                                    | | [4] CAPTURAR Y GUARDAR   | |
-|                                                    | +--------------------------+ |
-+----------------------------------------------------+------------------------------+
-```
-* **[1] Video en Vivo:** Transmisión continua sin retraso (0-lag) gestionada por hilos demonio en el servidor.
-* **[2] Métricas en Tiempo Real:** Muestra el peso proyectado mientras el cerdo camina por el corral.
-* **[3] Selector de Arete:** Permite asignar la lectura al cerdo correspondiente.
-* **[4] Botón 'Capturar y Guardar':** Congela el fotograma exacto y almacena el peso en la Hipertabla de TimescaleDB.
+1. **Visión Artificial IA (Monitor en Vivo / Subir Foto):**
+   * **Monitor en Vivo Dahua:** Visualiza el stream MJPEG continuo sin lag con cambio en caliente entre **Canal 1 (Óptico)** y **Canal 2 (Térmico)**. Seleccione el animal y presione **Capturar y Guardar** para almacenar la lectura.
+   * **Subir Foto:** Suba cualquier fotografía del porcino (cenital, oblicua o lateral) y estime el peso con confirmación sonora (*chime*).
+   * **Calibración con Marcador ArUco:** En la sección de calibración de la misma tarjeta, suba una fotografía que incluya un marcador físico **ArUco** (por defecto de `10 cm`), presione **Calibrar con ArUco** y el sistema guardará la escala exacta en `px/cm` para todas las futuras mediciones del corral.
+2. **Báscula Manual:** Formulario rápido para registrar pesajes de báscula tradicional.
+3. **Analítica GMD:** Gráficas de **Ganancia Media Diaria (GMD)** por corral calculadas por TimescaleDB, con **filtro de período** (`7 días`, `15 días`, `30 días`, `90 días`) y comparación frente al estándar Porkcolombia.
+4. **Historial de Sesiones:** Tabla cronológica con opción de anulación segura (recalcula automáticamente el último peso válido del animal).
 
 ---
 
-### 3.4 Control de Bodega y Kardex Contable (Conversión Automática)
+### 3.5 Alimentación, Planes Nutricionales y Conversión Alimenticia (FCR)
 
-En el menú lateral **Inventario > Bodega y Kardex**:
-
-* **¿Cómo maneja PorciTech los bultos y los kilogramos?**
-  * La bodega compra en **Bultos de 40 kg** (`factor_conversion_kg = 40.0`).
-  * El operario sirve raciones en **Kilogramos** en el corral (ej. 20 kg).
-  * El sistema divide `20 / 40 = 0.50 bultos` y descuenta automáticamente medio bulto del stock general, registrando la salida en el Kardex contable inmutable sin descuadre contable.
+En el menú **Alimentación** dispone de:
+1. **Registro de Raciones y Estado de Silos:** Registra kilogramos suministrados por corral y fase, calculando automáticamente el costo y descontando bultos de bodega por orden FEFO.
+2. **Planes de Alimentación por Etapa y Corral:** Cree y administre dietas objetivo (`kg por animal`, `frecuencia diaria`, `FCR objetivo`).
+3. **Conversión Alimenticia (FCR):** Tabla comparativa en tiempo real por corral:
+   $$\text{FCR} = \frac{\text{Alimento Suministrado (kg)}}{\text{Ganancia de Peso Real (kg)}}$$
+   Clasifica automáticamente el corral como **Óptimo**, **Atención** o **Fuera de Estándar** frente a la meta Porkcolombia.
 
 ---
 
-### 3.5 Flujo Reproductivo (Ley de los 114 Días)
+### 3.6 Inventario, Kardex FEFO y Alertas de Vencimiento
 
-En el menú lateral **Reproducción**:
+En el menú **Inventario**:
+* **Banner de Lotes Vencidos y Próximos a Vencer:** Destaca en rojo los lotes vencidos y en ámbar los próximos a caducar (dentro de los siguientes 30 días) para priorizar su rotación o retiro.
+* **Registro Simplificado de Insumo:** Al presionar **Registrar Nuevo Insumo**, solo el **Nombre**, la **Categoría** y el **Costo Unitario** son obligatorios. Si deja el SKU en blanco, el sistema lo genera automáticamente; además puede ingresar el stock inicial, número de lote, fecha de vencimiento y registro ICA en el mismo paso.
+* **Bloqueo Sanitario FEFO:** Al despachar alimento o fármacos, el sistema consume primero el lote vigente más próximo a vencer y **bloquea cualquier intento de usar un lote vencido**.
 
-1. **Registrar Servicio de Monta:**
-   * Ingrese la fecha del servicio y seleccione la cerda y el macho.
-   * **Automatización:** El motor de base de datos calculará y fijará la fecha probable de parto sumando exactamente **114 días** (3 meses, 3 semanas y 3 días).
-2. **Alertas de Gestación:**
-   * Cuando falten 7 días o menos para los 114 días, la cerda aparecerá resaltada en amarillo en el Dashboard con la indicación: *"Trasladar a Sala de Maternidad"*.
+---
+
+### 3.7 Sanidad, Bioseguridad y Reproducción
+
+* **Vacunación / Sanidad:** Registro de tratamientos y vacunas por animal o corral completo, con selección de lote de bodega, asignación de días de retiro y banner superior de alertas de carencia activas.
+* **Bioseguridad:** Checklists diarios operacionales y estructurales exigidos por el ICA (desinfección de vehículos, rodiluvios, control de plagas) con filtro por fecha.
+* **Reproducción:** Flujo completo en 3 pestañas: **Servicios** (calcula automáticamente `fecha_probable_parto = fecha_servicio + 114 días`), **Partos** y **Destetes** (calculando días reales de lactancia).
+
+---
+
+### 3.8 Alertas y Reportes Oficiales (Exportación Excel y PDF)
+
+En el menú **Alertas y Reportes**:
+1. Seleccione el **Tipo de Reporte** (`Consolidado Integral`, `Producción y Pesos`, `Sanidad y Bioseguridad`, `Reproducción`, `Nutrición`, `Conversión Alimenticia FCR` o `Auditoría de Vacíos Sanitarios`).
+2. Defina el **Rango de Fechas** y opcionalmente filtre por **Corral**.
+3. Haga clic en:
+   * **Generar Vista Previa:** Muestra el informe tabular listo para imprimir.
+   * **Descargar Excel (`.xlsx`):** Genera un libro multi-hoja formateado con resumen de KPIs y pestañas detalladas.
+   * **Descargar PDF (`.pdf`):** Descarga el documento oficial en formato horizontal listo para auditorías ICA o gerencia.
 
 ---
 
 <a name="4-módulo-iii-pasaporte-sanitario"></a>
 # 🛡️ 4. Módulo III: Pasaporte Sanitario y Trazabilidad Pública (`/trace/[id]`)
 
-Diseñado para cumplir con las exigencias de inocuidad alimentaria del **ICA e INVIMA** en plantas de beneficio (frigoríficos) o puntos de venta.
+Diseñado para cumplir con las exigencias de inocuidad alimentaria del **ICA e INVIMA** en plantas de beneficio (frigoríficos) o puntos de comercialización.
 
 ---
 
-### 4.1 ¿Cómo Funciona la Consulta Pública?
-Cualquier persona (inspector sanitario, comprador o consumidor final) puede escanear el código QR del arete del porcino con la cámara de su teléfono celular común.
-
-* **No requiere iniciar sesión.**
-* **No requiere descargar ninguna aplicación.**
-* El sistema abre la página oficial de verificación: `http://servidor:3000/trace/<codigo_qr>`.
-
----
-
-### 4.2 Los Dos Posibles Resultados Oficiales
+### 4.1 Consulta Pública sin Registro
+Al escanear el código QR del arete con cualquier cámara de teléfono, se abre automáticamente la ruta pública `http://<servidor>:3000/trace/<codigo_qr>` sin solicitar usuario ni contraseña. La página consulta en tiempo real los tratamientos clínicos registrados para ese animal y evalúa sus días de retiro vigentes:
 
 #### Caso A: Animal Apto (Certificado Verde)
-Si el cerdo nunca ha recibido fármacos de retiro o si ya se cumplieron todos los días de carencia reglamentarios:
+* `🟢 APTO PARA COMERCIALIZACIÓN Y BENEFICIO`: Muestra 0 días de retiro activos, historial de biológicos certificados (con fecha de aplicación, número de lote y médico veterinario responsable) y genealogía.
 
-```text
-+-------------------------------------------------------+
-|  🐷 PORCITECH - CERTIFICADO OFICIAL DE INOCUIDAD ICA  |
-+-------------------------------------------------------+
-|  ESTADO DE TRAZABILIDAD SANITARIA:                    |
-|                                                       |
-|  ===================================================  |
-|  🟢 APTO PARA COMERCIALIZACIÓN Y CONSUMO HUMANO       |
-|  ===================================================  |
-|                                                       |
-|  Arete Identificador:  #4092-CEBA                     |
-|  Granja de Origen:     Centro Agropecuario La Rejoya  |
-|  Registro Sanitario:   ICA-BPP-2026-CAUCA             |
-|  Tratamientos Activos: Ninguno (0 días de retiro)     |
-|                                                       |
-|  [✓] Carnes libres de trazas y residuos antibióticos  |
-+-------------------------------------------------------+
-```
-
----
-
-#### Caso B: Animal Bloqueado por Periodo de Carencia (Alerta Roja)
-Si el animal recibió un antibiótico recientemente y aún tiene días de retiro vigentes:
-
-```text
-+-------------------------------------------------------+
-|  🐷 PORCITECH - CERTIFICADO OFICIAL DE INOCUIDAD ICA  |
-+-------------------------------------------------------+
-|  ESTADO DE TRAZABILIDAD SANITARIA:                    |
-|                                                       |
-|  ===================================================  |
-|  🔴 PERIODO DE CARENCIA ACTIVO — NO APTO PARA SACRIFICIO|
-|  ===================================================  |
-|                                                       |
-|  Arete Identificador:  #18-CUARENTENA                 |
-|  Medicamento Aplicado: Tilmicosina 300 mg             |
-|  Lote Biológico ICA:   LOTE-ICA-TILM-902              |
-|  Fecha de Aplicación:  01/11/2026                     |
-|  Tiempo de Retiro:     14 Días Obligatorios           |
-|  Días Faltantes:       6 DÍAS RESTANTES               |
-|  Apto para Beneficio:  15/11/2026                     |
-|                                                       |
-|  [!] INFRACCIÓN: El sacrificio de este animal genera  |
-|      decomiso inmediato y sanción según Res. ICA      |
-+-------------------------------------------------------+
-```
+#### Caso B: Animal en Carencia Farmacológica (Bloqueo Rojo)
+* `🔴 PERIODO DE CARENCIA ACTIVO — NO APTO PARA SACRIFICIO`: Indica el medicamento aplicado, la fecha de aplicación, los **días exactos faltantes** y la fecha futura en la cual quedará liberado para beneficio.
 
 ---
 
 <a name="5-módulo-iv-faq"></a>
 # ❓ 5. Módulo IV: Preguntas Frecuentes y Solución de Problemas (FAQ)
 
-### P1: "¿Qué debo hacer si la app móvil muestra el chip en color ROJO (Offline)?"
-* **Respuesta:** No se preocupe. Puede seguir trabajando, registrando pesajes manuales, vacunas y partos. Todos sus registros se guardarán de forma segura en la memoria del teléfono. Al finalizar sus tareas en el galpón y acercarse a la oficina con Wi-Fi, entre a **Ajustes > Cola de Sincronización** y presione **Sincronizar Todo Ahora**.
+### P1: "¿Qué debo hacer si la app móvil muestra el chip en color ÁMBAR (Offline)?"
+* **Respuesta:** Siga trabajando con normalidad. Sus pesajes manuales, raciones, vacunas y partos se almacenan en la cola local del teléfono. Al regresar a la zona con Wi-Fi, abra **Ajustes (`⚙️`)** y presione **Sincronizar Todo Ahora**.
 
----
+### P2: "¿Puedo tomar la foto de pesaje IA desde un lado (perfil) si no puedo subirme encima del corral?"
+* **Respuesta:** **Sí.** En la cámara integrada de la app móvil seleccione el ángulo **Libre (Auto)**, **Lateral** o **3/4 Oblicuo** según su posición, asegúrese de que el cerdo aparezca completo dentro del encuadre y capture la foto.
 
-### P2: "¿Por qué el sistema no me deja ingresar un cerdo a un corral?"
-* **Respuesta:** Cada corral tiene configurada una **Capacidad Máxima**. Si el corral está lleno, el sistema bloquea el ingreso con el mensaje: *"El corral ha alcanzado su capacidad máxima permitida"*. Traslade primero otro porcino a otra fase o seleccione un corral con cupos libres.
+### P3: "¿Cómo conecto la app móvil si cambió la IP del computador servidor en la granja?"
+* **Respuesta:** En la pantalla de **Inicio de Sesión** de la app móvil, toque **Conexión con Servidor Local**, escriba la nueva IP con `:8000` (por ejemplo `192.168.1.25:8000`) y presione **Guardar IP**.
 
----
+### P4: "¿Por qué el sistema no me deja registrar un tratamiento o ración usando cierto lote de bodega?"
+* **Respuesta:** Por normativa sanitaria del ICA, PorciTech **bloquea automáticamente cualquier lote cuya fecha de vencimiento ya haya expirado**. Registre un nuevo lote vigente en **Inventario** o utilice otro lote disponible.
 
-### P3: "¿Por qué la foto cenital de la cámara IA arrojó un porcentaje de confianza bajo?"
-* **Respuesta:** Esto ocurre cuando:
-  1. El cerdo estaba acostado o tapado por otro animal.
-  2. La foto se tomó demasiado cerca cortando la cabeza o la cola.
-  3. Había poca iluminación en el galpón.  
-  *Solución:* Asegúrese de que el lomo del animal esté despejado, mantenga una altura de ~2.20 metros y repita la captura con el botón **Repetir Foto**.
-
----
-
-### P4: "¿Quién puede recetar medicamentos y asignar días de retiro?"
-* **Respuesta:** Por normativa sanitaria del ICA y seguridad del sistema, solo los usuarios con rol de **Médico Veterinario** o **Administrador** pueden registrar tratamientos con tiempos de carencia. Los operarios solo pueden consultar el estado sanitario.
+### P5: "¿Por qué la Auditoría de Vacíos Sanitarios muestra 'Vacío Insuficiente'?"
+* **Respuesta:** Indica que entre la fecha de salida del lote anterior y la fecha de entrada del nuevo lote en ese corral transcurrieron menos días que el mínimo requerido (`dias_vacio_requerido`, por defecto 7 días) o aún falta verificar la desinfección.
 
 ---
 
 <a name="6-matriz-de-control-de-versiones"></a>
 # 📋 6. Matriz de Aprobación Documental (SENA ADSO)
-
-Este manual de usuario forma parte integral del repositorio de software de PorciTech 4.0 bajo la modalidad **Docs-as-Code**:
 
 * **Ubicación en Repositorio:** [`MANUAL_DE_USUARIO.md`](file:///home/santiago/Documentos/ADSO_SENA_3176243/CODIGO_FUENTE_PORCITECH/MANUAL_DE_USUARIO.md)
 * **Directorio de Activos:** [`docs/assets/screenshots/`](file:///home/santiago/Documentos/ADSO_SENA_3176243/CODIGO_FUENTE_PORCITECH/docs/assets/screenshots)
