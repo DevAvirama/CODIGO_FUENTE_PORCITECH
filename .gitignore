@@ -5,6 +5,7 @@ porcitech_mobile/
 vision-artificial/
 ScriptsSQL/
 Documents/
+Despliegue/
 
 # Entornos y temporales
 .env
@@ -15,3 +16,4 @@ Documents/
 *.yml
 *.json
 .gitattributes
+Caddyfile
