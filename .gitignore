@@ -8,6 +8,7 @@ Documents/
 
 # Entornos y temporales
 .env
+*.pem
 *.dump
 .DS_Store
 *.sh
