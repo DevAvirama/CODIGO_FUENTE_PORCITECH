@@ -205,6 +205,8 @@ Si usa una báscula física de respaldo, ingrese a **Pesar Cerdo > Ingreso Manua
 
 Desde el acceso directo **Alimentación** en el Dashboard móvil, el operario cuenta con dos pestañas:
 
+![Alimentación y Bodega](docs/assets/screenshots/movil_06_alimentacion.png)
+
 1. **Pestaña `Registrar Ración`:**
    * Seleccione el **Corral** (lote) y el **Alimento** disponible en bodega.
    * Elija la **Fase Nutricional** (`Pre-iniciador`, `Iniciador`, `Levante`, `Ceba`).
@@ -217,12 +219,21 @@ Desde el acceso directo **Alimentación** en el Dashboard móvil, el operario cu
 
 ### 2.7 Registro de Tratamientos Sanitarios y Partos
 
+Desde el acceso directo **Reproducción** en el Dashboard móvil
+
+
+![Reproduccion](docs/assets/screenshots/movil_07_reproduccion.png)
+
+![Vacunacion](docs/assets/screenshots/movil_08_vacunacion.png)
+
 * **Sanidad / Vacunación:** Seleccione el animal o corral, escoja el medicamento o biológico real del inventario de bodega, ingrese la dosis (botones rápidos `1 ml`, `2 ml`, `3 ml` o manual) y verifique el **lote biológico ICA**. Si algún lote en bodega está vencido, el sistema lo bloqueará automáticamente.
 * **Partos en Maternidad:** Seleccione una cerda del hato real (el sistema filtra automáticamente hembras) y use los contadores táctiles `+ / -` para registrar **Nacidos Vivos**, **Nacidos Muertos**, **Momias** y el **Peso Total de la Camada (kg)**.
 
 ---
 
 ### 2.8 Modo Desconectado y Cola de Sincronización (Offline-First)
+
+![Modo Desconectado y Cola de Sincronización](docs/assets/screenshots/movil_09_desconectado.png)
 
 1. Cuando pierda conexión Wi-Fi dentro del galpón, el chip superior cambiará a `Offline 🟠`.
 2. Sus pesajes manuales, raciones, partos y tratamientos se guardarán en la memoria local con un identificador único (`id_local`).
@@ -267,6 +278,9 @@ Presenta en tiempo real:
 
 ### 3.3 Animales, Etiquetas QR y Auditoría de Vacíos Sanitarios
 
+![Animales, Etiquetas QR y Auditoría de Vacíos Sanitarios](docs/assets/screenshots/web_02_animales.png)
+
+
 En el menú **Animales** encontrará:
 1. **Catálogo de Porcinos y Corrales:** Busque por arete/QR, filtre por corral o estado (`activo`, `lactante`, `gestacion`, `precebo`, `levante`, `engorde`, `cuarentena`, `enfermo`, `reemplazo`, `vendido`, `muerto`, `descarte`).
 2. **Hoja de Vida y Etiqueta QR:** Haga clic sobre un animal para ver su genealogía (Padre/Madre), historial de pesajes y generar su etiqueta QR imprimible.
@@ -283,7 +297,9 @@ En el menú **Animales** encontrará:
 
 En el menú **Registro de Peso** dispone de cuatro vistas principales:
 
-![Monitor CCTV en Vivo](docs/assets/screenshots/web_02_cctv.png)
+![Monitor CCTV en Vivo](docs/assets/screenshots/web_03_cctv.png)
+
+![Funcion cenital](docs/assets/screenshots/web_04_funcion_cenital.png)
 
 1. **Visión Artificial IA (Monitor en Vivo / Subir Foto):**
    * **Monitor en Vivo Dahua:** Visualiza el stream MJPEG continuo sin lag con cambio en caliente entre **Canal 1 (Óptico)** y **Canal 2 (Térmico)**. Seleccione el animal y presione **Capturar y Guardar** para almacenar la lectura.
@@ -298,6 +314,9 @@ En el menú **Registro de Peso** dispone de cuatro vistas principales:
 ### 3.5 Alimentación, Planes Nutricionales y Conversión Alimenticia (FCR)
 
 En el menú **Alimentación** dispone de:
+
+![Alimentación, Planes Nutricionales y Conversión Alimenticia (FCR)](docs/assets/screenshots/web_05_alimentacion.png)
+
 1. **Registro de Raciones y Estado de Silos:** Registra kilogramos suministrados por corral y fase, calculando automáticamente el costo y descontando bultos de bodega por orden FEFO.
 2. **Planes de Alimentación por Etapa y Corral:** Cree y administre dietas objetivo (`kg por animal`, `frecuencia diaria`, `FCR objetivo`).
 3. **Conversión Alimenticia (FCR):** Tabla comparativa en tiempo real por corral:
@@ -309,6 +328,9 @@ En el menú **Alimentación** dispone de:
 ### 3.6 Inventario, Kardex FEFO y Alertas de Vencimiento
 
 En el menú **Inventario**:
+
+![Inventario, kardex FEFO y Alertas de Vencimiento)](docs/assets/screenshots/web_06_kardex.png)
+
 * **Banner de Lotes Vencidos y Próximos a Vencer:** Destaca en rojo los lotes vencidos y en ámbar los próximos a caducar (dentro de los siguientes 30 días) para priorizar su rotación o retiro.
 * **Registro Simplificado de Insumo:** Al presionar **Registrar Nuevo Insumo**, solo el **Nombre**, la **Categoría** y el **Costo Unitario** son obligatorios. Si deja el SKU en blanco, el sistema lo genera automáticamente; además puede ingresar el stock inicial, número de lote, fecha de vencimiento y registro ICA en el mismo paso.
 * **Bloqueo Sanitario FEFO:** Al despachar alimento o fármacos, el sistema consume primero el lote vigente más próximo a vencer y **bloquea cualquier intento de usar un lote vencido**.
@@ -316,6 +338,13 @@ En el menú **Inventario**:
 ---
 
 ### 3.7 Sanidad, Bioseguridad y Reproducción
+
+En el menú **Vacunación**:
+En el menú **Reproducción**:
+
+![Vacunacion / Sanidad)](docs/assets/screenshots/web_07_vacunacion.png)
+
+![Reproducción)](docs/assets/screenshots/web_08_reproduccion.png)
 
 * **Vacunación / Sanidad:** Registro de tratamientos y vacunas por animal o corral completo, con selección de lote de bodega, asignación de días de retiro y banner superior de alertas de carencia activas.
 * **Bioseguridad:** Checklists diarios operacionales y estructurales exigidos por el ICA (desinfección de vehículos, rodiluvios, control de plagas) con filtro por fecha.
@@ -326,6 +355,9 @@ En el menú **Inventario**:
 ### 3.8 Alertas y Reportes Oficiales (Exportación Excel y PDF)
 
 En el menú **Alertas y Reportes**:
+
+![Alertas y Reportes)](docs/assets/screenshots/web_09_alerta_reportes.png)
+
 1. Seleccione el **Tipo de Reporte** (`Consolidado Integral`, `Producción y Pesos`, `Sanidad y Bioseguridad`, `Reproducción`, `Nutrición`, `Conversión Alimenticia FCR` o `Auditoría de Vacíos Sanitarios`).
 2. Defina el **Rango de Fechas** y opcionalmente filtre por **Corral**.
 3. Haga clic en:
@@ -346,9 +378,16 @@ Diseñado para cumplir con las exigencias de inocuidad alimentaria del **ICA e I
 Al escanear el código QR del arete con cualquier cámara de teléfono, se abre automáticamente la ruta pública `http://<servidor>:3000/trace/<codigo_qr>` sin solicitar usuario ni contraseña. La página consulta en tiempo real los tratamientos clínicos registrados para ese animal y evalúa sus días de retiro vigentes:
 
 #### Caso A: Animal Apto (Certificado Verde)
+
+![Animal apto)](docs/assets/screenshots/web_10_animal_apto.png)
+
+
 * `🟢 APTO PARA COMERCIALIZACIÓN Y BENEFICIO`: Muestra 0 días de retiro activos, historial de biológicos certificados (con fecha de aplicación, número de lote y médico veterinario responsable) y genealogía.
 
 #### Caso B: Animal en Carencia Farmacológica (Bloqueo Rojo)
+
+![Animal no apto)](docs/assets/screenshots/web_11_animal_no_apto.png)
+
 * `🔴 PERIODO DE CARENCIA ACTIVO — NO APTO PARA SACRIFICIO`: Indica el medicamento aplicado, la fecha de aplicación, los **días exactos faltantes** y la fecha futura en la cual quedará liberado para beneficio.
 
 ---
